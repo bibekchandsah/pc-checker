@@ -7,13 +7,14 @@ import sys
 import threading
 import subprocess
 import time
+import os
 import numpy as np
 from datetime import datetime
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                               QLabel, QPushButton, QTextEdit, QGroupBox, QApplication,
                               QSlider, QProgressBar)
 from PySide6.QtCore import Qt, QTimer, QThread, Signal
-from PySide6.QtGui import QImage, QPixmap, QPainter, QPen, QColor
+from PySide6.QtGui import QImage, QPixmap, QPainter, QPen, QColor, QIcon
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -273,6 +274,14 @@ class MicrophoneTestWindow(QMainWindow):
         """Initialize the user interface"""
         self.setWindowTitle("🎤 Microphone Test")
         self.setGeometry(100, 100, 1180, 720)
+        
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        
+        # Center the window on screen
+        self.center_window()
         
         # Central widget
         central_widget = QWidget()
@@ -558,6 +567,15 @@ class MicrophoneTestWindow(QMainWindow):
                 
         except Exception as e:
             self.update_status(f"❌ Failed to open sound settings: {str(e)}")
+    
+    def center_window(self):
+        """Center the window on the screen"""
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        window_geometry = self.frameGeometry()
+        center_point = screen_geometry.center()
+        window_geometry.moveCenter(center_point)
+        self.move(window_geometry.topLeft())
     
     def closeEvent(self, event):
         """Handle window close event"""

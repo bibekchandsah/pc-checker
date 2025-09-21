@@ -8,6 +8,7 @@ import sys
 import json
 import csv
 import os
+import webbrowser
 from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, 
                               QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, 
@@ -15,13 +16,14 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget,
                               QProgressBar, QSplitter, QGroupBox, QGridLayout,
                               QScrollArea, QFrame, QMessageBox, QComboBox,
                               QSpinBox, QCheckBox)
-from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject
-from PySide6.QtGui import QFont, QPixmap, QIcon
+from PySide6.QtCore import Qt, QTimer, QThread, Signal, QObject, QUrl
+from PySide6.QtGui import QFont, QPixmap, QIcon, QDesktopServices, QCursor
 
 from hardware_info import HardwareInfo
 from os_info import OSInfo
 from system_tests import SystemTests
 
+version = "1.1"
 
 class RefreshWorker(QThread):
     """Worker thread for refreshing data without blocking UI"""
@@ -1365,8 +1367,16 @@ class LaptopTestingApp(QMainWindow):
         self.load_initial_data()
     
     def init_ui(self):
-        self.setWindowTitle("Laptop Testing Program v1.0")
+        self.setWindowTitle(f"Laptop Testing Program v{version}")
         self.setGeometry(100, 100, 1200, 800)
+        
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        
+        # Center the window on screen
+        self.center_window()
         
         # Create central widget and main layout
         central_widget = QWidget()
@@ -1458,9 +1468,78 @@ class LaptopTestingApp(QMainWindow):
         
         layout.addWidget(self.tab_widget)
         
-        # Status bar
+        # Status bar with developer credit
+        status_layout = QHBoxLayout()
+        
+        # Status label (left side)
         self.status_label = QLabel("Ready")
-        layout.addWidget(self.status_label)
+        self.status_label.setStyleSheet("""
+            QLabel {
+                color: #cccccc;
+                font-size: 11px;
+                padding: 5px;
+            }
+        """)
+        status_layout.addWidget(self.status_label)
+        
+        # Add stretch to push credits to the right
+        status_layout.addStretch()
+        
+        # Contributor label (GitHub repository)
+        self.contributor_label = QLabel("Contributor")
+        self.contributor_label.setToolTip("Visit GitHub repository: https://github.com/bibekchandsah/pc-checker")
+        self.contributor_label.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.contributor_label.setStyleSheet("""
+            QLabel {
+                color: #32CD32;
+                font-size: 13px;
+                text-decoration: underline;
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QLabel:hover {
+                color: #aaaaaa;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+            }
+        """)
+        self.contributor_label.mousePressEvent = self.open_contributor_github
+        status_layout.addWidget(self.contributor_label)
+        
+        # Separator between contributor and developer
+        separator_label = QLabel(" | ")
+        separator_label.setStyleSheet("""
+            QLabel {
+                color: #666666;
+                font-size: 13px;
+                padding: 5px 2px;
+            }
+        """)
+        status_layout.addWidget(separator_label)
+        
+        # Developer credit label (right side)
+        self.developer_label = QLabel("Developed by Bibek")
+        self.developer_label.setToolTip("Visit developer's website: https://www.bibekchandsah.com.np/")
+        self.developer_label.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.developer_label.setStyleSheet("""
+            QLabel {
+                color: royalblue;
+                font-size: 13px;
+                text-decoration: underline;
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QLabel:hover {
+                color: #aaaaaa;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+            }
+        """)
+        self.developer_label.mousePressEvent = self.open_developer_website
+        status_layout.addWidget(self.developer_label)
+        
+        # Add status layout to main layout
+        layout.addLayout(status_layout)
         
         central_widget.setLayout(layout)
     
@@ -1996,6 +2075,41 @@ class LaptopTestingApp(QMainWindow):
             import traceback
             print(f"CSV Generation Error: {str(e)}")
             traceback.print_exc()
+    
+    def open_developer_website(self, event):
+        """Open developer website when the label is clicked"""
+        try:
+            # Use QDesktopServices to open URL in default browser
+            url = QUrl("https://www.bibekchandsah.com.np/")
+            QDesktopServices.openUrl(url)
+        except Exception as e:
+            # Fallback to webbrowser module
+            try:
+                webbrowser.open("https://www.bibekchandsah.com.np/")
+            except Exception as fallback_error:
+                print(f"Failed to open website: {e}, Fallback error: {fallback_error}")
+    
+    def open_contributor_github(self, event):
+        """Open contributor GitHub repository when the label is clicked"""
+        try:
+            # Use QDesktopServices to open URL in default browser
+            url = QUrl("https://github.com/bibekchandsah/pc-checker")
+            QDesktopServices.openUrl(url)
+        except Exception as e:
+            # Fallback to webbrowser module
+            try:
+                webbrowser.open("https://github.com/bibekchandsah/pc-checker")
+            except Exception as fallback_error:
+                print(f"Failed to open GitHub repository: {e}, Fallback error: {fallback_error}")
+    
+    def center_window(self):
+        """Center the window on the screen"""
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        window_geometry = self.frameGeometry()
+        center_point = screen_geometry.center()
+        window_geometry.moveCenter(center_point)
+        self.move(window_geometry.topLeft())
 
 
 def main():

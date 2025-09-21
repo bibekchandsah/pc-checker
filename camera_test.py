@@ -7,11 +7,12 @@ import sys
 import threading
 import subprocess
 import time
+import os
 from datetime import datetime
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                               QLabel, QPushButton, QTextEdit, QGroupBox, QApplication)
 from PySide6.QtCore import Qt, QTimer, QThread, Signal
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtGui import QImage, QPixmap, QIcon
 
 # Try to import OpenCV, but make it optional
 try:
@@ -138,6 +139,14 @@ class CameraTestWindow(QMainWindow):
         """Initialize the user interface"""
         self.setWindowTitle("📷 Camera Test")
         self.setGeometry(100, 100, 890, 730)
+        
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        
+        # Center the window on screen
+        self.center_window()
         
         # Central widget
         central_widget = QWidget()
@@ -401,6 +410,15 @@ class CameraTestWindow(QMainWindow):
                 
         except Exception as e:
             self.update_status(f"❌ Failed to open camera settings: {str(e)}")
+    
+    def center_window(self):
+        """Center the window on the screen"""
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        window_geometry = self.frameGeometry()
+        center_point = screen_geometry.center()
+        window_geometry.moveCenter(center_point)
+        self.move(window_geometry.topLeft())
     
     def closeEvent(self, event):
         """Handle window close event"""
