@@ -1,0 +1,13 @@
+PySide6
+psutil
+py-cpuinfo
+GPUtil
+distro; sys_platform == "linux"
+wmi; sys_platform == "win32"
+requests
+speedtest-cli
+opencv-python
+pyaudio
+matplotlib
+numpy
+scipy
