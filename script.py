@@ -23,6 +23,14 @@ from hardware_info import HardwareInfo
 from os_info import OSInfo
 from system_tests import SystemTests
 
+# Import update manager
+try:
+    from update_manager import UpdateManager
+    UPDATE_MANAGER_AVAILABLE = True
+except ImportError:
+    UPDATE_MANAGER_AVAILABLE = False
+    print("Update manager not available. Install 'requests' and 'packaging' packages for auto-update functionality.")
+
 version = "1.1"
 
 class RefreshWorker(QThread):
@@ -1362,9 +1370,20 @@ class LaptopTestingApp(QMainWindow):
         self.hw_info = HardwareInfo()
         self.os_info = OSInfo()
         self.refresh_worker = None
+        
+        # Initialize update manager
+        if UPDATE_MANAGER_AVAILABLE:
+            self.update_manager = UpdateManager(self, version)
+        else:
+            self.update_manager = None
+        
         self.init_ui()
         self.setup_refresh_timer()
         self.load_initial_data()
+        
+        # Check for updates on startup (after a delay)
+        if self.update_manager:
+            QTimer.singleShot(2000, self.check_startup_updates)
     
     def init_ui(self):
         self.setWindowTitle(f"Laptop Testing Program v{version}")
@@ -1448,6 +1467,32 @@ class LaptopTestingApp(QMainWindow):
             }
         """)
         header_layout.addWidget(self.refresh_btn)
+        
+        # Update check button
+        if UPDATE_MANAGER_AVAILABLE:
+            self.update_btn = QPushButton("⬆️")
+            self.update_btn.setToolTip("Check for Updates")
+            self.update_btn.clicked.connect(self.check_for_updates_manual)
+            self.update_btn.setFixedSize(40, 30)  # Make it compact
+            self.update_btn.setStyleSheet("""
+                QPushButton {
+                    font-size: 16px;
+                    border: 1px solid #606060;
+                    border-radius: 6px;
+                    background-color: #4a4a4a;
+                    color: #00ff00;
+                    padding: 2px;
+                }
+                QPushButton:hover {
+                    background-color: #5a5a5a;
+                    border: 1px solid #707070;
+                    color: #00ff88;
+                }
+                QPushButton:pressed {
+                    background-color: #3a3a3a;
+                }
+            """)
+            header_layout.addWidget(self.update_btn)
         
         layout.addLayout(header_layout)
         
@@ -2101,6 +2146,32 @@ class LaptopTestingApp(QMainWindow):
                 webbrowser.open("https://github.com/bibekchandsah/pc-checker")
             except Exception as fallback_error:
                 print(f"Failed to open GitHub repository: {e}, Fallback error: {fallback_error}")
+    
+    def check_startup_updates(self):
+        """Check for updates on startup and reminders"""
+        if self.update_manager:
+            # Check for update reminders first
+            self.update_manager.check_update_reminder()
+            
+            # Then check for new updates automatically (silent check)
+            self.update_manager.check_for_updates(show_no_update_message=False)
+    
+    def check_for_updates_manual(self):
+        """Manually check for updates (triggered by user)"""
+        if self.update_manager:
+            self.update_manager.check_for_updates(show_no_update_message=True)
+        else:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Update Feature Unavailable")
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText("Update feature is not available.\n\nPlease install required packages:\n• requests\n• packaging\n\nOr check for updates manually at:\nhttps://github.com/bibekchandsah/pc-checker")
+            
+            # Set window icon if available
+            icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+            if os.path.exists(icon_path):
+                msg.setWindowIcon(QIcon(icon_path))
+            
+            msg.exec()
     
     def center_window(self):
         """Center the window on the screen"""
