@@ -1,2 +1,4 @@
 __pycache__/
 update_reminder.json
+build
+dist

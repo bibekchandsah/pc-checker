@@ -9,6 +9,7 @@ import json
 import csv
 import os
 import webbrowser
+import platform
 from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, 
                               QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, 
@@ -2189,12 +2190,97 @@ def main():
     app.setApplicationName("Laptop Testing Program")
     app.setApplicationVersion("1.0")
     
-    # Create and show main window
-    window = LaptopTestingApp()
-    window.show()
+    # Prevent multiple instances
+    app.setQuitOnLastWindowClosed(True)
     
-    # Start event loop
-    sys.exit(app.exec())
+    # Check if another instance is already running
+    import tempfile
+    import os
+    lock_file = os.path.join(tempfile.gettempdir(), 'laptop_testing_program.lock')
+    
+    try:
+        # Check if lock file exists and if the process is still running
+        if os.path.exists(lock_file):
+            try:
+                # Read the PID from the lock file
+                with open(lock_file, 'r') as f:
+                    pid = int(f.read().strip())
+                
+                # Check if the process with this PID is still running
+                if platform.system() == 'Windows':
+                    import subprocess
+                    from subprocess_helper import run_hidden
+                    # Check if process is running on Windows
+                    result = run_hidden(
+                        ['tasklist', '/FI', f'PID eq {pid}'],
+                        capture_output=True,
+                        text=True
+                    )
+                    if str(pid) in result.stdout:
+                        # Process is still running
+                        from PySide6.QtWidgets import QMessageBox
+                        msg = QMessageBox()
+                        msg.setIcon(QMessageBox.Warning)
+                        msg.setWindowTitle("Already Running")
+                        msg.setText("Laptop Testing Program is already running!")
+                        msg.setInformativeText("Please check your taskbar or close the existing instance before starting a new one.")
+                        msg.setStandardButtons(QMessageBox.Ok)
+                        msg.exec()
+                        sys.exit(1)
+                    else:
+                        # Process not running, remove stale lock file
+                        print(f"Removing stale lock file (PID {pid} not found)")
+                        os.remove(lock_file)
+                else:
+                    # For non-Windows systems
+                    try:
+                        os.kill(pid, 0)  # Check if process exists
+                        # Process exists, show warning
+                        from PySide6.QtWidgets import QMessageBox
+                        msg = QMessageBox()
+                        msg.setIcon(QMessageBox.Warning)
+                        msg.setWindowTitle("Already Running")
+                        msg.setText("Laptop Testing Program is already running!")
+                        msg.setInformativeText("Please check your taskbar or close the existing instance before starting a new one.")
+                        msg.setStandardButtons(QMessageBox.Ok)
+                        msg.exec()
+                        sys.exit(1)
+                    except OSError:
+                        # Process doesn't exist, remove stale lock file
+                        print(f"Removing stale lock file (PID {pid} not found)")
+                        os.remove(lock_file)
+            except (ValueError, FileNotFoundError):
+                # Invalid lock file, remove it
+                print("Removing invalid lock file")
+                try:
+                    os.remove(lock_file)
+                except:
+                    pass
+        
+        # Create lock file
+        with open(lock_file, 'w') as f:
+            f.write(str(os.getpid()))
+        
+        # Create and show main window
+        window = LaptopTestingApp()
+        window.show()
+        
+        # Start event loop
+        result = app.exec()
+        
+        # Clean up lock file
+        try:
+            os.remove(lock_file)
+        except:
+            pass
+            
+        sys.exit(result)
+        
+    except Exception as e:
+        print(f"Error starting application: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

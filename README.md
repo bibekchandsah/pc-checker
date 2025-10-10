@@ -2,6 +2,27 @@
 
 A comprehensive laptop testing application built with Python and PySide6 that provides detailed hardware and OS information along with system testing capabilities and enhanced CSV reporting.
 
+## 📥 Download
+
+**[Download Latest Release](https://github.com/bibekchandsah/pc-checker/releases)** - Get the standalone executable for Windows (no Python installation required!)
+
+## 🖼️ Preview
+
+### Main Interface
+![System Overview](preview.png)
+
+### Hardware Details
+![Hardware Information](preview2.png)
+
+### System Testing
+![System Tests](preview1.png)
+
+### Camera & Mircrophone Testing
+![OS Details](preview3.png)
+
+### Keyboard Testing
+![CSV Reports](preview4.jpeg)
+
 ## ✅ Latest Updates (v1.1)
 
 **Enhanced CSV Reporting with Complete System Cards**: 

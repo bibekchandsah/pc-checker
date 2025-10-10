@@ -12,6 +12,8 @@ import tempfile
 import random
 from datetime import datetime
 from keyboard_test import KeyboardTest
+from subprocess_helper import run_hidden
+from subprocess_helper import run_hidden
 
 # Try to import microphone test
 try:
@@ -473,14 +475,13 @@ class SystemTests:
         
         def brightness_test_worker():
             try:
-                import subprocess
                 import sys
                 
                 # Try to get current brightness level
                 try:
                     if sys.platform == "win32":
                         # Windows brightness control using WMI
-                        result = subprocess.run([
+                        result = run_hidden([
                             'powershell', '-Command',
                             '(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightness).CurrentBrightness'
                         ], capture_output=True, text=True, timeout=10)
@@ -520,7 +521,7 @@ class SystemTests:
                     try:
                         print(f"DEBUG: Setting brightness to {level}%")
                         # Set brightness using PowerShell
-                        result = subprocess.run([
+                        result = run_hidden([
                             'powershell', '-Command',
                             f'(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,{level})'
                         ], capture_output=True, text=True, timeout=10)
@@ -563,7 +564,7 @@ class SystemTests:
                 if results['original_brightness'] is not None:
                     try:
                         print(f"DEBUG: Restoring brightness to {results['original_brightness']}%")
-                        result = subprocess.run([
+                        result = run_hidden([
                             'powershell', '-Command',
                             f'(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,{results["original_brightness"]})'
                         ], capture_output=True, text=True, timeout=10)

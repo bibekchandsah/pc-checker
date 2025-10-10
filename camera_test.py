@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QLabel, QPushButton, QTextEdit, QGroupBox, QApplication)
 from PySide6.QtCore import Qt, QTimer, QThread, Signal
 from PySide6.QtGui import QImage, QPixmap, QIcon
+from subprocess_helper import run_hidden
 
 # Try to import OpenCV, but make it optional
 try:
@@ -378,13 +379,13 @@ class CameraTestWindow(QMainWindow):
         try:
             if sys.platform == "win32":
                 # Windows Camera app
-                subprocess.run(['start', 'microsoft.windows.camera:'], shell=True)
+                run_hidden(['start', 'microsoft.windows.camera:'], shell=True)
                 self.update_status("📱 Camera app launched")
             elif sys.platform == "darwin":  # macOS
-                subprocess.run(['open', '-a', 'Photo Booth'])
+                run_hidden(['open', '-a', 'Photo Booth'])
                 self.update_status("📱 Photo Booth launched")
             else:  # Linux
-                subprocess.run(['cheese'])
+                run_hidden(['cheese'])
                 self.update_status("📱 Cheese camera app launched")
                 
         except Exception as e:
@@ -395,17 +396,17 @@ class CameraTestWindow(QMainWindow):
         try:
             if sys.platform == "win32":
                 # Open Windows Settings -> Bluetooth & devices -> Cameras
-                subprocess.run(['start', 'ms-settings:camera'], shell=True)
+                run_hidden(['start', 'ms-settings:camera'], shell=True)
                 self.update_status("🔧 Camera settings opened")
             elif sys.platform == "darwin":  # macOS
-                subprocess.run(['open', '-b', 'com.apple.preference.security'])
+                run_hidden(['open', '-b', 'com.apple.preference.security'])
                 self.update_status("🔧 Security preferences opened")
             else:  # Linux
                 # Try to open system settings (varies by desktop environment)
                 try:
-                    subprocess.run(['gnome-control-center', 'camera'])
+                    run_hidden(['gnome-control-center', 'camera'])
                 except:
-                    subprocess.run(['systemsettings5', 'camera'])
+                    run_hidden(['systemsettings5', 'camera'])
                 self.update_status("🔧 System settings opened")
                 
         except Exception as e:

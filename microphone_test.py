@@ -18,6 +18,7 @@ from PySide6.QtGui import QImage, QPixmap, QPainter, QPen, QColor, QIcon
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from subprocess_helper import run_hidden
 
 # Try to import audio libraries
 try:
@@ -534,16 +535,16 @@ class MicrophoneTestWindow(QMainWindow):
         """Open microphone settings"""
         try:
             if sys.platform == "win32":
-                subprocess.run(['start', 'ms-settings:sound'], shell=True)
+                run_hidden(['start', 'ms-settings:sound'], shell=True)
                 self.update_status("🔧 Microphone settings opened")
             elif sys.platform == "darwin":  # macOS
-                subprocess.run(['open', '-b', 'com.apple.preference.security'])
+                run_hidden(['open', '-b', 'com.apple.preference.security'])
                 self.update_status("🔧 Security preferences opened")
             else:  # Linux
                 try:
-                    subprocess.run(['gnome-control-center', 'sound'])
+                    run_hidden(['gnome-control-center', 'sound'])
                 except:
-                    subprocess.run(['systemsettings5', 'audio'])
+                    run_hidden(['systemsettings5', 'audio'])
                 self.update_status("🔧 Sound settings opened")
                 
         except Exception as e:
@@ -553,16 +554,16 @@ class MicrophoneTestWindow(QMainWindow):
         """Open sound settings"""
         try:
             if sys.platform == "win32":
-                subprocess.run(['start', 'mmsys.cpl'], shell=True)
+                run_hidden(['start', 'mmsys.cpl'], shell=True)
                 self.update_status("🔊 Sound settings opened")
             elif sys.platform == "darwin":  # macOS
-                subprocess.run(['open', '/System/Library/PreferencePanes/Sound.prefPane'])
+                run_hidden(['open', '/System/Library/PreferencePanes/Sound.prefPane'])
                 self.update_status("🔊 Sound preferences opened")
             else:  # Linux
                 try:
-                    subprocess.run(['pavucontrol'])
+                    run_hidden(['pavucontrol'])
                 except:
-                    subprocess.run(['gnome-control-center', 'sound'])
+                    run_hidden(['gnome-control-center', 'sound'])
                 self.update_status("🔊 Sound control opened")
                 
         except Exception as e:
